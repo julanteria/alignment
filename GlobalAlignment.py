@@ -1,14 +1,3 @@
-"""
-Algorithmen auf Sequenzen I 
-Übungsserie 2
-Aufgabe 2.2
-19.04.2022
-
-Max Leon Stuhrberg aqgka
-Julian Vorpahl akxjx
-"""
-
-
 import sys
 import numpy as np
 
@@ -25,7 +14,7 @@ misCost = int(sys.argv[5])
 
 
 
-#cost function
+
 #returns 0 if chars are the same
 #returns custom missmatch costs if chars are different
 def CostFunction(str1,str2,i,j):
@@ -43,7 +32,7 @@ def CostFunction(str1,str2,i,j):
 
 
 #function for Costmatrix D(i,j)
-#takes two string as input
+#takes two strings as input
 #prints Matrix 
 #returns Edit-distance ( D[|l1|][|l2|] )
 def getCostMatrix(s1,s2):
