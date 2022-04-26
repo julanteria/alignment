@@ -316,6 +316,53 @@ def getCostMatrix(s1,s2):
     return D
 
 
+def getCostMatrixSemiGlobal(s1,s2):
+    l1 = len(s1)+1
+    l2 = len(s2)+1
+
+    #initializes Numpy Matrix with zeros
+    D = np.zeros(shape=(l1,l2)).astype('int')
+
+
+    #initializes first row
+    for j in range(1,l2):
+        X = D[0][j-1] + insCost
+        D[0][j] = X
+
+
+    #initializes first column
+    #only zeros because of semi-global
+    for i in range(1,l1):
+        D[i][0] = 0
+
+
+    #loops through all matrix entrys except D[0][0]
+    #fills all entrtys according to alignment rules and custom Insertion-, Deletion- and Missmatch-Cost
+    #calls function CostFunction(str1,str2,i,j)
+    out = ""
+    for i in range(1,l1):
+
+        for j in range(1,l2):
+
+
+            #zero cost if we are at the end of str2 because of semi-global
+            if j == len(s2): 
+                down = D[i-1][j] + 0
+
+            else:
+                down = D[i-1][j] + insCost
+
+
+            right = D[i][j-1] + delCost
+
+
+            diag = D[i-1][j-1] + CostFunction(s1,s2,i,j)
+
+            D[i][j] = min(right,down,diag)
+
+    return D
+
+
 def getAlignemt(D):
     perfpath = ""
     s1_out = ""
@@ -389,7 +436,7 @@ def getNumberOfAlign(s1, s2):
 
 def getAlignemtStrings(str1,str2):
 
-    D = getCostMatrix(str1,str2)
+    D = getCostMatrixSemiGlobal(str1,str2)
 
     align = getAlignemt(D)
 
