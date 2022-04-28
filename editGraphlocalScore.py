@@ -15,15 +15,24 @@ WINDOW_WIDTH = 1200
 
 
 
+#Matrix scheint zu stimmen laut https://de.wikipedia.org/wiki/Smith-Waterman-Algorithmus#:~:text=Der%20Smith%2DWaterman%2DAlgorithmus%20ist,Alignment%20zwischen%20zwei%20Sequenzen%20berechnet.
+#Backtracking ist noch falsch
+
 #Strings
 global str1 
 global str2
 
 string1 = sys.argv[1]
 string2 = sys.argv[2]
-insCost = int(sys.argv[3])
+"""insCost = int(sys.argv[3])
 delCost = int(sys.argv[4])
 misCost = int(sys.argv[5])
+"""
+
+insCost = -1
+delCost = -1
+misCost = -1
+
 
 
 str1 = string1
@@ -271,11 +280,25 @@ def CostFunction(str1,str2,i,j):
     ch2 = str2[j-1]
 
     if ch1 == ch2:
-        return 0
+        return 1
 
 
     if ch1 != ch2:
         return misCost
+
+
+def ScoreFunction(str1,str2,i,j):
+
+    ch1 = str1[i-1]
+    ch2 = str2[j-1]
+
+    if ch1 == ch2:
+        return 2
+
+
+    if ch1 != ch2:
+        return -1
+
 
 
 
@@ -314,6 +337,46 @@ def getCostMatrix(s1,s2):
     #print()
     #return D[l1-1][l2-1]
     return D
+
+def getCostMatrixLocal(s1,s2):
+    l1 = len(s1)+1
+    l2 = len(s2)+1
+    D = np.zeros(shape=(l1,l2)).astype('int')
+
+    for i in range(1,l2):
+        X = D[0][i-1] + insCost
+        D[0][i] = 0 
+
+    for j in range(1,l1):
+        X = D[j-1][0] + delCost
+        D[j][0] = 0
+
+
+    for i in range(1,l1):
+        for j in range(1,l2):
+
+            right = D[i][j-1] + delCost
+
+            if right < 0:
+                right = 0
+
+            down = D[i-1][j] + insCost
+
+            if down < 0:
+                down = 0
+
+            diag = D[i-1][j-1] + ScoreFunction(s1,s2,i,j)
+
+            if diag < 0:
+                diag = 0
+
+
+
+
+            D[i][j] = max(right,down,diag)
+
+    return D
+
 
 
 def getCostMatrixSemiGlobal(s1,s2):
@@ -444,16 +507,32 @@ def getAlignemtStrings(str1,str2):
 
 
 
+def getAlignemtStringsLocal(str1,str2):
+
+    D = getCostMatrixLocal(str1,str2)
+
+    align = getAlignemt(D)
+
+    return align
 
 
 
 
 
 
+D = getCostMatrixLocal(str1,str2)
+
+print(D)
+
+print()
+
+print()
 
 
+align = getAlignemt(D)
 
-
+print(align[0])
+print(align[1])
 
 
 
@@ -472,7 +551,7 @@ def main():
     #drawGrid_arrows(len(str2)+1,len(str1)+1)
     pygame.display.update()
 
-    aliStrList = getAlignemtStrings(str1,str2)
+    aliStrList = getAlignemtStringsLocal(str1,str2)
 
     draw_alig_header(aliStrList[1], aliStrList[0])
     draw_perf_path(aliStrList[2])
@@ -490,6 +569,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
