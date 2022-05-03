@@ -24,14 +24,15 @@ global str2
 
 string1 = sys.argv[1]
 string2 = sys.argv[2]
-"""insCost = int(sys.argv[3])
+insCost = int(sys.argv[3])
 delCost = int(sys.argv[4])
 misCost = int(sys.argv[5])
-"""
+MATCH = int(sys.argv[6])
 
-insCost = -1
+
+"""insCost = -1
 delCost = -1
-misCost = -1
+misCost = -1"""
 
 
 
@@ -293,11 +294,11 @@ def ScoreFunction(str1,str2,i,j):
     ch2 = str2[j-1]
 
     if ch1 == ch2:
-        return 2
+        return MATCH
 
 
     if ch1 != ch2:
-        return -1
+        return misCost
 
 
 
@@ -475,6 +476,108 @@ def getAlignemt(D):
 
 
 
+def traceBackLocal(D):
+
+    s1_out = ""
+    s2_out = ""
+
+    maxElement = np.amax(D)
+
+    indexMax = np.where(D == np.amax(D))
+
+    #print(maxElement)
+    #print(indexMax)
+    #print("LENGTH: " + str(len(indexMax[0]))) 
+    l = len(indexMax[0])
+    if l > 1:
+        indexMax = indexMax[0]
+    j = int(indexMax[0])
+    i = int(indexMax[1])
+    #print(D[j][i])
+
+
+    print(str1[j-1])
+    print(str2[i-1])
+    print(D[j][i])
+
+    t = D[j][i]
+
+    while t != 0:
+
+        up = D[j][i-1]
+        diag = D[j-1][i-1]
+        left = D[j-1][i]
+
+        t = min(up,diag,left)
+        
+        if t == 0:
+            if t == diag:
+                s1_out = string1[j-1] + s1_out
+                s2_out = string2[i-1] + s2_out
+                i -= 1
+                j -= 1
+
+            elif t == up:
+                s1_out = string1[j-1] + s1_out
+                s2_out = "-" + s2_out
+                i -= 1
+            
+            elif t == left:
+                s1_out = "-" + s1_out
+                s2_out = string2[i-1] + s2_out
+                j -= 1
+
+
+        if t != 0:
+            t = max(up,diag,left)
+
+
+            if t == diag:
+                s1_out = string1[j-1] + s1_out
+                s2_out = string2[i-1] + s2_out
+                i -= 1
+                j -= 1
+
+            elif t == up:
+                s1_out = string1[j-1] + s1_out
+                s2_out = "-" + s2_out
+                i -= 1
+            
+            elif t == left:
+                s1_out = "-" + s1_out
+                s2_out = string2[i-1] + s2_out
+                j -= 1
+        
+        print(t)
+
+
+    print(s1_out)
+    print(s2_out)
+
+
+
+"""        if D[j][i] == D[j-1][i-1] - ScoreFunction(string1,string2,i,j):
+            s1_out = string1[j-1] + s1_out
+            s2_out = string2[i-1] + s2_out
+            i -= 1
+            j -= 1
+
+            #perfpath += "D"
+
+        elif D[i][j] == D[j][i-1] - insCost: 
+            s1_out = "-" + s1_out
+            s2_out = string2[i-1] + s2_out
+            i -= 1
+            #perfpath += "r"
+
+        else:
+            s1_out = string1[j-1] + s1_out
+            s2_out = "-" + s2_out
+            j -= 1
+            #print("CCCC")
+            #perfpath += "d"
+            """
+
 
 
 
@@ -567,8 +670,23 @@ def main():
         pygame.display.update()
 
 
+
+def testMain():
+
+    D = getCostMatrixLocal(str1,str2)
+
+    print(D)
+
+    print()
+
+    print()
+
+    traceBackLocal(D)
+
+
 if __name__ == '__main__':
-    main()
+    #main()
+    testMain()
 
 
 
