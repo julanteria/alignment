@@ -2,7 +2,7 @@ import numpy as np
 import sys
 
 
-class aligment:
+class alignment:
 
     def __init__(self, string1, string2, ma, i, d, mi, aligmentType):
         self.string1 = string1
@@ -12,10 +12,11 @@ class aligment:
         self.deleteCost = d
         self.missCost = mi
         self.aligmentType = aligmentType
+        self.Costmatrix = []
 
-
-        if self.aligmentType == "g":
+        if aligmentType == "g":
             self.Costmatrix = self.getGlobalCostMatrix()
+
 
         #elif self.alignment == "l":
          #   self.Costmatrix = LocalMtarix()
@@ -63,21 +64,6 @@ class aligment:
 
 
 
-    def main():
-
-        string1 = sys.argv[1]
-        string2 = sys.argv[2]
-        insCost = int(sys.argv[3])
-        delCost = int(sys.argv[4])
-        misCost = int(sys.argv[5])
-        matchCost = int(sys.argv[5])
-        aligmentType = int(sys.argv[5])
-
-        alignment = aligment(string1, string2, matchCost, insCost, misCost, aligmentType)
-
-
-    if __name__ == '__main__':
-        main()
 
 
 
