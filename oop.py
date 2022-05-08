@@ -13,11 +13,13 @@ class alignment:
         self.missCost = mi
 
         self.aligmentType = aligmentType
+
         self.globalCostmatrix = []
         self.localCostmatrix = []
         self.semiglobalCostmatrix = []
 
         self.globalAlignment = []
+        self.semiglobalAlignment = []
 
 
 
@@ -27,6 +29,7 @@ class alignment:
             
         if aligmentType == "s":
             self.semiglobalCostmatrix = self.getSemiglobalCostmatrix()
+            self.semiglobalAlignment = self.getSemiGlobalTraceback()
 
         if aligmentType == "l":
             self.localCostmatrix = self.getLocalCostMatrix()
@@ -55,6 +58,48 @@ class alignment:
 
         if ch1 != ch2:
             return self.missCost
+
+
+
+
+    def getSemiGlobalTraceback(self):
+        s1_out = ""
+        s2_out = ""
+
+        i = len(self.string1)
+        j = len(self.string2)
+
+        while i > 0 and j > 0:
+            if self.semiglobalCostmatrix[i][j] == self.semiglobalCostmatrix[i - 1][j - 1] + self.costFunction(self.string1, self.string2, i, j):
+                s1_out = self.string1[i - 1] + s1_out
+                s2_out = self.string2[j - 1] + s2_out
+                i -= 1
+                j -= 1
+
+
+            elif self.semiglobalCostmatrix[i][j] == self.semiglobalCostmatrix[i][j - 1] + self.insertCost:
+                s1_out = "-" + s1_out
+                s2_out = self.string2[j - 1] + s2_out
+                j -= 1
+
+
+            else:
+                s1_out = self.string1[i - 1] + s1_out
+                s2_out = "-" + s2_out
+                i -= 1
+
+        while i > 0:
+            s1_out = self.string1[i - 1] + s1_out
+            s2_out = "-" + s2_out
+            i -= 1
+
+        while j > 0:
+            s1_out = "-" + s1_out
+            s2_out = self.string2[j - 1] + s2_out
+            j -= 1
+
+
+        return [s1_out, s2_out]
 
 
 
