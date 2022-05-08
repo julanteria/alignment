@@ -1,5 +1,4 @@
 import numpy as np
-import sys
 
 
 class alignment:
@@ -7,32 +6,31 @@ class alignment:
     def __init__(self, string1, string2, ma, i, d, mi, aligmentType):
         self.string1 = string1
         self.string2 = string2
+
         self.matchCost = ma
         self.insertCost = i
         self.deleteCost = d
         self.missCost = mi
+
         self.aligmentType = aligmentType
         self.globalCostmatrix = []
         self.localCostmatrix = []
         self.semiglobalCostmatrix = []
 
+        self.globalAlignment = []
+
+
+
         if aligmentType == "g":
             self.globalCostmatrix = self.getGlobalCostMatrix()
-
+            self.globalAlignment = self.getGlobalTraceback()
+            
         if aligmentType == "s":
             self.semiglobalCostmatrix = self.getSemiglobalCostmatrix()
 
         if aligmentType == "l":
             self.localCostmatrix = self.getLocalCostMatrix()
 
-        print(self.matchCost)
-        print(self.insertCost)
-        print(self.deleteCost)
-        print(self.missCost)
-
-
-        #elif self.alignment == "l":
-         #   self.Costmatrix = LocalMtarix()
 
 
     def costFunction(self, str1, str2, i, j, ):
@@ -59,6 +57,45 @@ class alignment:
             return self.missCost
 
 
+
+    def getGlobalTraceback(self):
+        s1_out = ""
+        s2_out = ""
+
+        i = len(self.string1)
+        j = len(self.string2)
+
+        while i > 0 and j > 0:
+            if self.globalCostmatrix[i][j] == self.globalCostmatrix[i - 1][j - 1] + self.costFunction(self.string1, self.string2, i, j):
+                s1_out = self.string1[i - 1] + s1_out
+                s2_out = self.string2[j - 1] + s2_out
+                i -= 1
+                j -= 1
+
+
+            elif self.globalCostmatrix[i][j] == self.globalCostmatrix[i][j - 1] + self.insertCost:
+                s1_out = "-" + s1_out
+                s2_out = self.string2[j - 1] + s2_out
+                j -= 1
+
+
+            else:
+                s1_out = self.string1[i - 1] + s1_out
+                s2_out = "-" + s2_out
+                i -= 1
+
+        while i > 0:
+            s1_out = self.string1[i - 1] + s1_out
+            s2_out = "-" + s2_out
+            i -= 1
+
+        while j > 0:
+            s1_out = "-" + s1_out
+            s2_out = self.string2[j - 1] + s2_out
+            j -= 1
+
+
+        return [s1_out, s2_out]
 
 
 
@@ -181,15 +218,6 @@ class alignment:
 
 
 
-
-
-
-
-
-
-    #def displayCount(self):
-    #    print
-    #    "Total Employee %d" % Employee.empCount
 
 
 

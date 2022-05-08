@@ -12,7 +12,7 @@ def main():
     aligmentType = str(sys.argv[7])
 
     alignment1 = alignment(string1, string2, matchCost, insCost, delCost, misCost, aligmentType)
-    print(alignment1.localCostmatrix)
+    print(alignment1.globalAlignment)
 
 
 if __name__ == '__main__':
