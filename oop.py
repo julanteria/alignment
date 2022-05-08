@@ -60,6 +60,8 @@ class alignment:
 
 
 
+
+
     def getGlobalCostMatrix(self):
         l1 = len(self.string1) + 1
         l2 = len(self.string2) + 1
@@ -132,7 +134,9 @@ class alignment:
 
         return D
 
-    #wtf not working 
+    # Matrix scheint zu stimmen laut https://de.wikipedia.org/wiki/Smith-Waterman-Algorithmus#:~:text=Der%20Smith%2DWaterman%2DAlgorithmus%20ist,Alignment%20zwischen%20zwei%20Sequenzen%20berechnet.
+    # Backtracking ist noch falsch
+    # python doAlign.py GGTTGACTA TGTTACGG  3 -2 -2 -3 l
     def getLocalCostMatrix(self):
         l1 = len(self.string1)+1
         l2 = len(self.string2)+1
@@ -148,12 +152,12 @@ class alignment:
         for i in range(1,l1):
             for j in range(1,l2):
 
-                right = D[i][j-1] - self.deleteCost
+                right = D[i][j-1] + self.deleteCost
 
                 if right < 0:
                     right = 0
 
-                down = D[i-1][j] - self.insertCost
+                down = D[i-1][j] + self.insertCost
 
                 if down < 0:
                     down = 0

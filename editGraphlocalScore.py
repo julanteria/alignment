@@ -17,7 +17,7 @@ WINDOW_WIDTH = 1200
 
 #Matrix scheint zu stimmen laut https://de.wikipedia.org/wiki/Smith-Waterman-Algorithmus#:~:text=Der%20Smith%2DWaterman%2DAlgorithmus%20ist,Alignment%20zwischen%20zwei%20Sequenzen%20berechnet.
 #Backtracking ist noch falsch
-
+# python doAlign.py GGTTGACTA TGTTACGG  3 -2 -2 -3 l
 #Strings
 global str1 
 global str2
