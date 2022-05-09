@@ -36,7 +36,7 @@ class alignment:
             self.localAlignment = self.getLocalTraceback()
 
 
-    #alignment score function for maximization optimization
+    #alignment score function for minimazation optimization
     def costFunction(self, str1, str2, i, j, ):
         ch1 = str1[i - 1]
         ch2 = str2[j - 1]
