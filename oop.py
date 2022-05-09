@@ -159,18 +159,16 @@ class alignment:
         #find indexes of max values in local cost matrix
         indexesMax = np.where(self.localCostmatrix == np.amax(self.localCostmatrix))
 
-        #loop through all max values, each max value results in a different local alignemnt
-        for ii in range(len(indexesMax[0])):
-            
-            #more than one max value
-            if len(indexesMax[0]) >= 2:
-                indexMax = indexesMax[ii]
-            #one max value
-            else:
-                indexMax = indexesMax
+        #i cordinates for max values
+        i_cors_max = list(indexesMax[0])
+        #j cordinates for max values
+        j_cors_max = list(indexesMax[1])
 
-            i = int(indexMax[0])
-            j = int(indexMax[1])
+        #loop through all max values, each max value results in a different local alignemnt
+        for ii in range(len(i_cors_max)):
+            
+            i = int(i_cors_max[ii])
+            j = int(j_cors_max[ii])
 
             #variable to check for zero entry
             t = self.localCostmatrix[i][j]
