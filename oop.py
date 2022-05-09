@@ -4,7 +4,7 @@ import numpy as np
 class alignment:
 
     #alignment attributes
-    def __init__(self, string1, string2, ma, i, d, mi, aligmentType):
+    def __init__(self, string1, string2, ma, i, d, mi, wg, ws, aligmentType):
         self.string1 = string1
         self.string2 = string2
 
@@ -12,6 +12,9 @@ class alignment:
         self.insertCost = i
         self.deleteCost = d
         self.missCost = mi
+
+        self.gapOpening = wg
+        self.gapExtension = ws
 
         self.aligmentType = aligmentType
 
@@ -286,16 +289,16 @@ class alignment:
         l1 = len(self.string1) + 1
         l2 = len(self.string2) + 1
         # initializes Numpy Matrix with zeros
-        D = np.zeros(shape=(l1, l2)).astype('int')
+        L = np.zeros(shape=(l1, l2)).astype('int')
 
         # initializes first row with zeros because of local
         for i in range(1, l2):
-            D[0][i] = 0
+            L[0][i] = 0
 
 
         # initializes first column with zeros because of local
         for j in range(1, l1):
-            D[j][0] = 0
+            L[j][0] = 0
 
 
         # loops through all matrix entrys except D[0][0]
@@ -304,31 +307,61 @@ class alignment:
         for i in range(1, l1):
             for j in range(1, l2):
 
-                right = D[i][j - 1] + self.deleteCost
+                right = L[i][j - 1] + self.deleteCost
                 
                 #no entrys smaller 0
                 if right < 0:
                     right = 0
 
-                down = D[i - 1][j] + self.insertCost
+                down = L[i - 1][j] + self.insertCost
 
                 #no entrys smaller 0
                 if down < 0:
                     down = 0
 
-                diag = D[i - 1][j - 1] + self.ScoreFunction(self.string1, self.string2, i, j)
+                diag = L[i - 1][j - 1] + self.ScoreFunction(self.string1, self.string2, i, j)
                 
                 #no entrys smaller 0
                 if diag < 0:
                     diag = 0
 
-                D[i][j] = max(right, down, diag)
+                L[i][j] = max(right, down, diag)
 
-        return D
-
-
+        return L
 
 
+
+    def getAffineCostMatrix(self):
+        l1 = len(self.string1) + 1
+        l2 = len(self.string2) + 1
+
+        # initializes Numpy Matrixs with zeros
+        E = np.zeros(shape=(l1, l2)).astype('int')
+        F = np.zeros(shape=(l1, l2)).astype('int')
+        G = np.zeros(shape=(l1, l2)).astype('int')
+
+
+        # initializes first row
+        for j in range(1, l2):
+            #X = D[0][j - 1] + self.insertCost
+            e = self.gapOpening + j * self.gapExtension
+            f = -1 #undefined?
+            g = -1 #undefined?
+
+            E[0][j] = e
+            F[0][j] = f
+            G[0][j] = g
+
+        # initializes first column
+        # only zeros because of semi-global
+        for i in range(1, l1):
+            e = -1 #undefined?
+            f = self.gapOpening + i * self.gapExtension
+            g = -1 #undefined?
+
+            E[i][0] = e
+            F[i][0] = f
+            G[i][0] = g
 
 
 
