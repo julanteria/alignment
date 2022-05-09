@@ -345,8 +345,8 @@ class alignment:
         for j in range(1, l2):
             #X = D[0][j - 1] + self.insertCost
             e = self.gapOpening + j * self.gapExtension
-            f = -1 #undefined?
-            g = -1 #undefined?
+            f = -1 #undefined? numpy.nan
+            g = -1 #undefined? numpy.nan
 
             E[0][j] = e
             F[0][j] = f
@@ -355,9 +355,9 @@ class alignment:
         # initializes first column
         # only zeros because of semi-global
         for i in range(1, l1):
-            e = -1 #undefined?
+            e = -1 #undefined? numpy.nan
             f = self.gapOpening + i * self.gapExtension
-            g = -1 #undefined?
+            g = -1 #undefined? numpy.nan
 
             E[i][0] = e
             F[i][0] = f
