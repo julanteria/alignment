@@ -9,9 +9,24 @@ def main():
     insCost = int(sys.argv[4])
     delCost = int(sys.argv[5])
     misCost = int(sys.argv[6])
-    aligmentType = str(sys.argv[7])
+    wg = int(sys.argv[7])
+    ws = int(sys.argv[8])
+    aligmentType = str(sys.argv[9])
 
-    alignment1 = alignment(string1, string2, matchCost, insCost, delCost, misCost, aligmentType)
+    alignment1 = alignment(string1, string2, matchCost, insCost, delCost, misCost, wg, ws, aligmentType)
+
+    for i in alignment1.affineCostMatrixes:
+        print(i)
+        print()
+
+    print()
+    print(alignment1.globalAlignmentAffineCost[0])
+    print(alignment1.globalAlignmentAffineCost[1])
+
+
+    #print(alignment1.affineCostMatrixes[0])
+
+
     
 
     if len(alignment1.globalAlignment) != 0:
@@ -37,6 +52,8 @@ def main():
             print(alignment1.localAlignment[i])
             print(alignment1.localAlignment[i+1])
             print()
+
+
 
 if __name__ == '__main__':
     main()
