@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 class alignment:
@@ -24,11 +25,16 @@ class alignment:
         self.localCostmatrix = []
         self.semiglobalCostmatrix = []
         self.affineCostMatrixes = []
+        self.multipleSequenceAlignment = ["HALA", "SAFA", "-ADL"]
+        self.msaProfile = []
+        
 
         self.globalAlignment = []
         self.semiglobalAlignment = []
         self.localAlignment = []
         self.globalAlignmentAffineCost = []
+
+        self.msaProfile = self.getMsaProfile()
 
         if aligmentType == "g":
             self.globalCostmatrix = self.getGlobalCostMatrix()
@@ -506,6 +512,35 @@ class alignment:
         Matrixes.append(D)
 
         return Matrixes
+
+
+    def getMsaProfile(self):
+        #check different chars in MSA
+        l = []
+        for string in self.multipleSequenceAlignment:
+            l += list(string)
+        charSet = set(l)
+        
+        alphLen = len(charSet)
+        strLen = len(self.multipleSequenceAlignment[0])
+
+        profile =  np.empty(shape=(alphLen,strLen), dtype='float')
+
+        for i in range(alphLen):
+            for j in range(strLen):
+                profile[i][j] = 0.1     
+        
+
+        l = list(charSet)
+        l.remove("-")
+        l.append("-")
+
+        df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,5)])
+        print(df)
+        
+
+        
+
 
 
 
