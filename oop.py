@@ -25,7 +25,8 @@ class alignment:
         self.localCostmatrix = []
         self.semiglobalCostmatrix = []
         self.affineCostMatrixes = []
-        self.multipleSequenceAlignment = ["HALA", "SAFA", "-ADL"]
+        #self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
+        self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
         self.msaProfile = []
         
 
@@ -526,16 +527,31 @@ class alignment:
 
         profile =  np.empty(shape=(alphLen,strLen), dtype='float')
 
-        for i in range(alphLen):
-            for j in range(strLen):
-                profile[i][j] = 0.1     
-        
-
         l = list(charSet)
         l.remove("-")
         l.append("-")
 
-        df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,5)])
+
+
+        for i in range(alphLen):
+            for j in range(strLen):
+                char = l[i]
+                x = 0
+                for string in self.multipleSequenceAlignment:
+
+                    if string[j] == char:
+                        x += 1
+
+                if x != 0:
+                    profile[i][j] = round(x/len(self.multipleSequenceAlignment),2) 
+                else:
+                    profile[i][j] = 0.0  
+
+
+        
+
+
+        df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,strLen+1)])
         print(df)
         
 
