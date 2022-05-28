@@ -1,5 +1,10 @@
 import numpy as np
 import pandas as pd
+import random as rd
+
+#todo Kostenfunktion für Profile
+#optimale Profil Seq Alignment
+#gemeinsames Profil???
 
 
 class alignment:
@@ -25,9 +30,13 @@ class alignment:
         self.localCostmatrix = []
         self.semiglobalCostmatrix = []
         self.affineCostMatrixes = []
-        #self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
-        self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
-        self.msaProfile = []
+
+        self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
+        self.alphabet = self.getAlphabet()
+        #self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
+        self.msaProfile = self.getMsaProfile()
+        self.seqProfileAlignment = []
+        self.getSeqProfAlignemnt()
         
 
         self.globalAlignment = []
@@ -35,7 +44,6 @@ class alignment:
         self.localAlignment = []
         self.globalAlignmentAffineCost = []
 
-        self.msaProfile = self.getMsaProfile()
 
         if aligmentType == "g":
             self.globalCostmatrix = self.getGlobalCostMatrix()
@@ -54,7 +62,7 @@ class alignment:
             self.affineCostMatrix_D = self.affineCostMatrixes[3]
             self.globalAlignmentAffineCost = self.getGlobalAffineTraceback()
 
-    # alignment score function for minimazation optimization
+    # alignment score function for minimazation optimization1
     def costFunction(self, str1, str2, i, j, ):
 
         ch1 = str1[i - 1]
@@ -66,23 +74,7 @@ class alignment:
         if ch1 != ch2:
             return self.missCost
 
-    def costFunctionX(self, str1, str2, i, j, ):
-        print("i: " + str(i))
-        print("j: " + str(j))
-        print("D[i][j]" + str(self.affineCostMatrix_D[i][j]))
-        print("D[i-1][j-1]" + str(self.affineCostMatrix_D[i-1][j-1]))
-        ch1 = str1[i - 1]
-        ch2 = str2[j - 1]
 
-        if ch1 == ch2:
-            print("match" + str(self.matchCost))
-            print()
-            return self.matchCost
-
-        if ch1 != ch2:
-            print("miss" + str(self.missCost))
-            print()
-            return self.missCost
 
     # alignment score function for maximization optimization
     def ScoreFunction(self, str1, str2, i, j):
@@ -515,22 +507,26 @@ class alignment:
         return Matrixes
 
 
-    def getMsaProfile(self):
-        #check different chars in MSA
+    def getAlphabet(self):
         l = []
         for string in self.multipleSequenceAlignment:
             l += list(string)
         charSet = set(l)
+
+        return charSet
+
+    def getMsaProfile(self):
+        charSet = self.alphabet
         
         alphLen = len(charSet)
         strLen = len(self.multipleSequenceAlignment[0])
 
         profile =  np.empty(shape=(alphLen,strLen), dtype='float')
 
-        l = list(charSet)
-        l.remove("-")
-        l.append("-")
-
+        #l = list(charSet)
+        #l.remove("-")
+        #l.append("-")
+        l = ["H", "S", "A", "L", "-"]
 
 
         for i in range(alphLen):
@@ -551,16 +547,31 @@ class alignment:
         
 
 
-        df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,strLen+1)])
+        #df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,strLen+1)])
+        #print(df)
+        return profile
+        
+
+        
+    def getSeqProfAlignemnt(self):
+        P = self.msaProfile
+        profStr = "SL"
+        profStr = "-" + "-" + profStr
+        appender = []
+        r = P.shape[0]-1
+        for x in range(0,r):
+            appender.append([0])
+        appender.append([1])
+
+        P = np.append(P, appender, axis=1)  
+
+        l = ["H", "S", "A", "L", "-"]
+
+        df = pd.DataFrame(P, index=l, columns=list(profStr))
+        print(P)
+        print()
         print(df)
         
-
-        
-
-
-
-
-
 
 
 
