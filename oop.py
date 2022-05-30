@@ -31,14 +31,18 @@ class alignment:
         self.semiglobalCostmatrix = []
         self.affineCostMatrixes = []
 
-        #self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
-        self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
-        self.alphabet = ["K", "L", "T", "A", "S", "E", "N", "I", "R", "-"]#self.getAlphabet()
-        self.seqProfileAlignmentString = "STRASSEN"
+        self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
+        #self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
+        #self.alphabet = ["K", "L", "T", "A", "S", "E", "N", "I", "R", "-"]#self.getAlphabet()
+        self.alphabet = self.getAlphabet() #["H", "S", "A", "L", "-"]
+        self.seqProfileAlignmentString = "SL"
        
         self.msaProfile = self.getMsaProfile()
-        self.seqProfileAlignment = self.getSeqProfAlignemnt()
-        self.seqProfileAlignmentCost = self.getSeqProfAligStringCost()
+        #self.seqProfileAlignment = self.getSeqProfAlignemnt()
+        #self.seqProfileAlignmentCost = self.getSeqProfAligStringCost()
+        self.costMatrixSeqProfileAlignment = self.getCostMatrixSeqProfileAlignment()
+        self.optSeqProfileAlignment  = []
+
         
 
         self.globalAlignment = []
@@ -75,6 +79,25 @@ class alignment:
 
         if ch1 != ch2:
             return self.missCost
+
+        # alignment score function for minimazation optimization1
+    def costFunctionProfileCol(self,col, ch1):
+        cost = 0
+        ch1 = ch1
+        i = 0
+        j = col
+        for ch2 in self.alphabet:
+            if ch1 == ch2:
+                cost += self.matchCost * self.msaProfile[i][j]
+            elif ch1 != ch2:
+                if ch1 == "-" or ch2 == "-":
+                    cost += self.insertCost * self.msaProfile[i][j]
+                else:
+                    cost += self.missCost * self.msaProfile[i][j]
+            i+=1
+        return cost
+
+
 
 
 
@@ -537,8 +560,11 @@ class alignment:
         for string in self.multipleSequenceAlignment:
             l += list(string)
         charSet = set(l)
+        out = list(charSet)
+        out.remove("-")
+        out.append("-")
 
-        return charSet
+        return out 
 
     def getMsaProfile(self):
         charSet = self.alphabet
@@ -564,7 +590,8 @@ class alignment:
                         x += 1
 
                 if x != 0:
-                    profile[i][j] = round(x/len(self.multipleSequenceAlignment),2) 
+                    #profile[i][j] = round(x/len(self.multipleSequenceAlignment),2) 
+                    profile[i][j] = x/len(self.multipleSequenceAlignment) 
                 else:
                     profile[i][j] = 0.0  
 
@@ -572,8 +599,8 @@ class alignment:
         
 
 
-        #df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,strLen+1)])
-        #print(df)
+        df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,strLen+1)])
+        print(df)
         return profile
         
 
@@ -600,7 +627,49 @@ class alignment:
         
 
 
+    def getCostMatrixSeqProfileAlignment(self):
+        m = len(self.multipleSequenceAlignment[0])+1  #i ?? nicht sicher string länge? immer msa länge?
+        n = len(self.seqProfileAlignmentString)+1 #j
+        #print(n)
+        #print(m) 
+        D = np.zeros(shape=(n, m)).astype('float') #n m sache nicht sicher
+    
+        # initializes first row
+        for j in range(1, m):
 
+            X = D[0][j - 1] + self.costFunctionProfileCol(j-1, "-")
+            D[0][j] = X
+
+        # initializes first column
+        for i in range(1, n):
+            ch1 = "-"
+            ch2 = self.seqProfileAlignmentString[i-1]
+            cost = 0
+            if ch1 != ch2:
+                cost = self.missCost
+            X = D[i-1][0] + cost
+            D[i][0] = X
+
+        for i in range(1, n):
+            for j in range(1, m):
+                ch1 = "-"
+                ch2 = self.seqProfileAlignmentString[i-1]
+                cost = 0
+                if ch1 != ch2:
+                    cost = self.missCost
+
+                up = D[i-1][j] + cost
+                left = D[i][j-1] + self.costFunctionProfileCol(j-1, "-")
+                diag = D[i-1][j-1] + self.costFunctionProfileCol(j-1, ch2)
+
+                D[i][j] = min(up,left,diag)
+        
+        #D[n-1][m-1] = float(round(D[n-1][m-1]))
+        
+
+        print()
+        print(D)
+        return D
 
 
 
