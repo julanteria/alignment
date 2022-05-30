@@ -31,12 +31,14 @@ class alignment:
         self.semiglobalCostmatrix = []
         self.affineCostMatrixes = []
 
-        self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
-        self.alphabet = self.getAlphabet()
-        #self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
+        #self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
+        self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
+        self.alphabet = ["K", "L", "T", "A", "S", "E", "N", "I", "R", "-"]#self.getAlphabet()
+        self.seqProfileAlignmentString = "STRASSEN"
+       
         self.msaProfile = self.getMsaProfile()
-        self.seqProfileAlignment = []
-        self.getSeqProfAlignemnt()
+        self.seqProfileAlignment = self.getSeqProfAlignemnt()
+        self.seqProfileAlignmentCost = self.getSeqProfAligStringCost()
         
 
         self.globalAlignment = []
@@ -87,6 +89,29 @@ class alignment:
 
         if ch1 != ch2:
             return self.missCost
+
+
+
+    def getSeqProfAligStringCost(self):
+        cost = 0
+        j = 0
+        P = self.seqProfileAlignmentString
+
+        for ch1 in self.seqProfileAlignmentString:
+            i = 0
+            for ch2 in self.alphabet:
+                if ch1 == ch2:
+                    cost += self.matchCost * self.msaProfile[i][j]
+                elif ch1 != ch2:
+                    if ch1 == "-" or ch2 == "-":
+                        cost += self.insertCost * self.msaProfile[i][j]
+                    else:
+                        cost += self.missCost * self.msaProfile[i][j]
+                i+=1
+            j+=1
+
+        print(cost)
+        return cost
 
 
     @staticmethod
@@ -526,7 +551,7 @@ class alignment:
         #l = list(charSet)
         #l.remove("-")
         #l.append("-")
-        l = ["H", "S", "A", "L", "-"]
+        l = self.alphabet
 
 
         for i in range(alphLen):
@@ -555,22 +580,23 @@ class alignment:
         
     def getSeqProfAlignemnt(self):
         P = self.msaProfile
-        profStr = "SL"
-        profStr = "-" + "-" + profStr
-        appender = []
-        r = P.shape[0]-1
-        for x in range(0,r):
-            appender.append([0])
-        appender.append([1])
+        profStr = self.seqProfileAlignmentString
+        #profStr = "-" + "-" + profStr
+        #appender = []
+        #r = P.shape[0]-1
+        #for x in range(0,r):
+        #    appender.append([0])
+        #appender.append([1])
 
-        P = np.append(P, appender, axis=1)  
+        #P = np.append(P, appender, axis=1)  
 
-        l = ["H", "S", "A", "L", "-"]
+        l = self.alphabet
 
         df = pd.DataFrame(P, index=l, columns=list(profStr))
         print(P)
         print()
         print(df)
+        return P
         
 
 
