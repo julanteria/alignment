@@ -1,21 +1,51 @@
-from oop2 import alignment
+from oop import alignment
 import sys
 
 
 def main():
-    string1 = sys.argv[1]
-    string2 = sys.argv[2]
-    matchCost = int(sys.argv[3])
-    insCost = int(sys.argv[4])
-    delCost = int(sys.argv[5])
-    misCost = int(sys.argv[6])
-    wg = int(sys.argv[7])
-    ws = int(sys.argv[8])
-    aligmentType = str(sys.argv[9])
+    insCost = int(sys.argv[1])
+    delCost = int(sys.argv[2])
+    misCost = int(sys.argv[3])
+    matchCost = 0
+    String = sys.argv[4]
+    AlignStrs = list(sys.argv[5:])
 
-    alignment1 = alignment(string1, string2, matchCost, insCost, delCost, misCost, wg, ws, aligmentType)
+
+    alignment1 = alignment("", "", matchCost, insCost, delCost, misCost, 0, 0, "", String, AlignStrs)
+
+
+    print("Strings for MSA-Profile:")
+    for st in AlignStrs:
+        print(st)
+    print()
+    print()
+
+
+    print("MSA-Profile:")
+    print()
+    print(alignment1.msaProfileDF)
+    print()
+    print()
+
+    print("Optimal MSA-Profile-Alignment with: " + String)
+    print()
+    print(alignment1.ProfAligProfDF)
+    print()
+    print("Optimal-MSA-Profile-Alignment-Cost: " + str(alignment1.seqProfileAlignmentCost) )
+    print()
+    print()
+
+    print("Common MSA-Profile-Alignment:")
+    print()
+    print(alignment1.CommonProfileDF)
+
+
+
 
     
+
+    
+
 
 
 

@@ -11,9 +11,11 @@ from fractions import Fraction as f
 class alignment:
 
     # alignment attributes
-    def __init__(self, string1, string2, ma, i, d, mi, wg, ws, aligmentType):
+    def __init__(self, string1, string2, ma, i, d, mi, wg, ws, aligmentType, String, AlignStrs):
+        #alignment1 = alignment("", "", matchCost, insCost, delCost, misCost, 0, 0, "", String, AlignStrs)
         self.string1 = string1
         self.string2 = string2
+        
 
         self.matchCost = ma
         self.insertCost = i
@@ -32,22 +34,30 @@ class alignment:
         self.semiglobalCostmatrix = []
         self.affineCostMatrixes = []
 
-        self.multipleSequenceAlignment = ["HAL", "SAA", "-AL"]
-        #self.multipleSequenceAlignment = ["KLASS-EN", "-TASS-E-", "KLEISTER"]
-        #self.alphabet = ["K", "L", "T", "A", "S", "E", "N", "I", "R", "-"]#self.getAlphabet()
-        self.alphabet = ["H", "S", "A", "L", "-"]
-        self.seqProfileAlignmentString = "SL"
+        self.multipleSequenceAlignment = AlignStrs
+        self.alphabet = self.getAlphabet() #"H", "S", "A", "L", "-"]
+        self.seqProfileAlignmentString = String
        
-        self.msaProfile = self.getMsaProfile()
+        
+
+
+        self.msaProfile = self.getMsaProfile()[0]
+        self.msaProfileDF =self.getMsaProfile()[1]
         #self.seqProfileAlignment = self.getSeqProfAlignemnt()
         #self.seqProfileAlignmentCost = self.getSeqProfAligStringCost()
         self.costMatrixSeqProfileAlignment = self.getCostMatrixSeqProfileAlignment()
-        self.optSeqProfileAlignment  = []
-        self.ProfAligProf = self.getProfAligStrTraceback()[1]
+        #self.optSeqProfileAlignment  = []
+        self.ProfAligProf = self.getProfAligStrTraceback()[1] #opt?
+        self.ProfAligProfDF = self.getProfAligStrTraceback()[2]
         self.ProfilAligntString = self.getProfAligStrTraceback()[0]
-        self.getCommonProfile()
 
-        
+        self.seqProfileAlignmentCost = self.getSeqProfAligStringCost()
+
+        self.CommonProfile = self.getCommonProfile()[0]
+        self.CommonProfileDF = self.getCommonProfile()[1]
+
+
+    
 
         self.globalAlignment = []
         self.semiglobalAlignment = []
@@ -119,27 +129,26 @@ class alignment:
             return self.missCost
 
 
-
     def getSeqProfAligStringCost(self):
         cost = 0
         j = 0
-        P = self.seqProfileAlignmentString
 
         for ch1 in self.seqProfileAlignmentString:
             i = 0
             for ch2 in self.alphabet:
                 if ch1 == ch2:
-                    cost += self.matchCost * self.msaProfile[i][j]
+                    cost += self.matchCost * self.ProfAligProf[i][j]
                 elif ch1 != ch2:
                     if ch1 == "-" or ch2 == "-":
-                        cost += self.insertCost * self.msaProfile[i][j]
+                        cost += self.insertCost * self.ProfAligProf[i][j]
                     else:
-                        cost += self.missCost * self.msaProfile[i][j]
+                        cost += self.missCost * self.ProfAligProf[i][j]
                 i+=1
             j+=1
 
-        print(cost)
         return cost
+
+
 
 
     @staticmethod
@@ -150,6 +159,16 @@ class alignment:
                 x.append(i)
 
         return min(x)
+
+    def appendIt(self, P):
+        appender = []
+        r = P.shape[0]-1
+        for x in range(0,r):
+            appender.append([0])
+        appender.append([1])
+
+        P = np.append(P, appender, axis=1) 
+        return P
 
 
     # Returns two global alignment strings from global cost matrix
@@ -417,8 +436,6 @@ class alignment:
 
         return D
 
-    # https://de.wikipedia.org/wiki/Smith-Waterman-Algorithmus#:~:text=Der%20Smith%2DWaterman%2DAlgorithmus%20ist,Alignment%20zwischen%20zwei%20Sequenzen%20berechnet.
-    # python doAlign.py GGTTGACTA TGTTACGG  3 -2 -2 -3 l
     # Returns numpy local Costmatrix
     def getLocalCostMatrix(self):
         l1 = len(self.string1) + 1
@@ -579,9 +596,6 @@ class alignment:
 
         profile =  np.empty(shape=(alphLen,strLen), dtype='object')
 
-        #l = list(charSet)
-        #l.remove("-")
-        #l.append("-")
         l = self.alphabet
 
 
@@ -595,7 +609,6 @@ class alignment:
                         x += 1
 
                 if x != 0:
-                    #profile[i][j] = round(x/len(self.multipleSequenceAlignment),2) 
                     profile[i][j] = f(x/len(self.multipleSequenceAlignment)).limit_denominator(100) 
                 else:
                     profile[i][j] = 0.0  
@@ -605,31 +618,9 @@ class alignment:
 
 
         df = pd.DataFrame(profile, index=l, columns=[x for x in range(1,strLen+1)])
-        #print(df)
-        return profile
+        return profile, df
         
 
-        
-    def getSeqProfAlignemnt(self):
-        P = self.msaProfile
-        profStr = self.seqProfileAlignmentString
-        #profStr = "-" + "-" + profStr
-        #appender = []
-        #r = P.shape[0]-1
-        #for x in range(0,r):
-        #    appender.append([0])
-        #appender.append([1])
-
-        #P = np.append(P, appender, axis=1)  
-
-        l = self.alphabet
-
-        df = pd.DataFrame(P, index=l, columns=list(profStr))
-        #print(P)
-        #print()
-        #print(df)
-        return P
-        
 
 
     def getCostMatrixSeqProfileAlignment(self):
@@ -643,11 +634,10 @@ class alignment:
 
 
 
-        m = len(self.multipleSequenceAlignment[0])+1  #i ?? nicht sicher string länge? immer msa länge?
-        n = len(self.seqProfileAlignmentString)+1 #j
-        #print(n)
-        #print(m) 
-        D = np.zeros(shape=(n, m)).astype('object') #n m sache nicht sicher
+        m = len(self.multipleSequenceAlignment[0])+1  
+        n = len(self.seqProfileAlignmentString)+1 
+ 
+        D = np.zeros(shape=(n, m)).astype('object') 
     
         # initializes first row
         for j in range(1, m):
@@ -710,30 +700,22 @@ class alignment:
         i = shape[0]-1
         j = shape[1]-1
 
-        # build up output strings as long as loop indices i and j are bigger 0
         while i > 0 and j > 0:
 
             if D[i][j] == D[i][j - 1] + self.costFunctionProfileCol(j-1, "-"):
                 s1_out += "l"
-                #raus += "-" + string[i-1]
                 j -=1
             
             
             elif D[i][j] == D[i - 1][j - 1] + self.costFunctionProfileCol(j-1, string[i-1]):
-                #print(self.costFunctionProfileCol(j-1, string[i-1]) == 0.333333)
                 s1_out += "D"
-                #raus += string[i-1]
                 i -= 1
                 j -=1
-
             
 
-               
-            # entry D[i][j] resulted from D[i][j-1] + deleteCost => add "-" (gap-character) to s2_out and add char from string1 to s1_out
             else:
                 np.insert(P_out, i, appender, axis=1)
                 s1_out += "d"
-                #raus += string[i-1]
                 i -= 1
         
         x = 0
@@ -747,111 +729,79 @@ class alignment:
             elif a == "D":
                 raus += string[x]
                 x += 1
-                
+        
+        
 
-        return raus, P_out
+        while P_out.shape[1] < len(raus):
+            P_out = self.appendIt(P_out)
+
+        while(P_out.shape[1] > len(raus)):
+            i = rd.choice(list(range(0,len(raus))))
+            raus = raus[:i] + "-" + raus[i:]
+ 
+        
+
+
+        df = pd.DataFrame(P_out, index=list(self.alphabet), columns=list(raus))
+
+        return raus, P_out, df
 
 
 
     def getCommonProfile(self):
-        string = self.ProfilAligntString
-        print(string)
-        def den_1(x):
-            if x == 0.0:
-                return 0.0
-            d = x.denominator
-            n = x.numerator
-            d += 1
-            return f(n/d).limit_denominator(1000) 
-
-        def both_1(x):
-            if x == 0.0:
-                return 0.0
-            d = x.denominator
-            n = x.numerator
-            d += 1
-            n +=1
-            return f(n/d).limit_denominator(100) 
-
-
+        stringAlig = self.ProfilAligntString
         
 
         B = np.empty(shape=(self.msaProfile.shape), dtype='object')
 
         shape = B.shape
-
-        jj = shape[0]
-        aa = shape[1]
-  
-
-        #df = df.applymap(den_1)
+        l = self.alphabet
         
-        for j in range(jj):
-            for a in range(aa):
-                up = 0
+
+        charSet = self.alphabet
+        
+        alphLen = len(charSet)
+        strLen = len(self.multipleSequenceAlignment[0])
+
+
+        for i in range(alphLen):
+            for j in range(strLen):
                 dow = len(self.multipleSequenceAlignment)
+                char = l[i]
+                x = 0
+                for string in self.multipleSequenceAlignment:
 
-                if self.alphabet[a] == self.multipleSequenceAlignment[a][a]:
-                    up +=1
-                
-                print()
-                print()
-                
-                B[j][a] =  (up,dow)
-                up = 0
+                    if string[j] == char:
+                        x += 1
 
-        print(B)
-        
+                    B[i][j] = (x,dow)
 
-        """
-        string = self.ProfilAligntString
-        df = pd.DataFrame(B, index=list(self.alphabet), columns=list(range(len(string))))
-        print(df)
-        
-
-
-        shape = B.shape
-
-        jj = shape[1]
-        aa = shape[0]
-  
-
-        #df = df.applymap(den_1)
-        
-        for j in range(jj):
-            for a in range(aa-1):
-                print(string[j] + ":" + self.multipleSequenceAlignment[s_i][j]) 
-                if string[j] == self.multipleSequenceAlignment[s_i][j]:
-                    B[a][j] = both_1(B[a][j])
-
+                if stringAlig[j] == l[i]:
+                    x += 1
+                    dow += 1
 
                 else:
-                    B[a][j] = den_1(B[a][j])
+                    dow += 1
 
-            #print(s_i)
-            s_i+=1
-        
-        for j in range(jj-1):
-            for a in range(aa-1):
-                
-                if string[j] == self.alphabet[a]:
-                    B[a][j] = both_1(B[a][j])
+                entry = 0
+
+                if x == 0:
+                    entry = 0
                 else:
-                    B[a][j] = den_1(B[a][j])
+                    entry = f(x/dow)
+
+                B[i][j] = entry
 
 
 
 
-        #print(jj)
-        #print(aa)
-        #print(B[4][3])
-        df = pd.DataFrame(B, index=list(self.alphabet), columns=list(range(len(string))))
-        print(df)
-        """
+        df = pd.DataFrame(B, index=list(self.alphabet), columns=list(range(1,len(string)+1)))
+        
+        return B, df
+        
 
-
+        
    
-
 
 
 
