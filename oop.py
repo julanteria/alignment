@@ -2,16 +2,17 @@ import numpy as np
 import pandas as pd
 import random as rd
 from fractions import Fraction as f
+import sys
 
-#todo Kostenfunktion für Profile
-#optimale Profil Seq Alignment
-#gemeinsames Profil???
+log = open('log.txt', 'a')
+
+
 
 
 class alignment:
 
     # alignment attributes
-    def __init__(self, string1, string2, ma, i, d, mi, wg, ws, aligmentType, String, AlignStrs):
+    def __init__(self, string1, string2, ma, i, d, mi, wg, ws, aligmentType, String, AlignStrs1, AlignStrs2):
         #alignment1 = alignment("", "", matchCost, insCost, delCost, misCost, 0, 0, "", String, AlignStrs)
         self.string1 = string1
         self.string2 = string2
@@ -34,27 +35,44 @@ class alignment:
         self.semiglobalCostmatrix = []
         self.affineCostMatrixes = []
 
-        self.multipleSequenceAlignment = AlignStrs
+        self.multipleSequenceAlignment1 = AlignStrs1
+        self.multipleSequenceAlignment2 = AlignStrs2
+
         self.alphabet = self.getAlphabet() #"H", "S", "A", "L", "-"]
-        self.seqProfileAlignmentString = String
+
        
         
 
 
-        self.msaProfile = self.getMsaProfile()[0]
-        self.msaProfileDF =self.getMsaProfile()[1]
-        #self.seqProfileAlignment = self.getSeqProfAlignemnt()
+        self.msaProfile1 = self.getMsaProfile(self.multipleSequenceAlignment1)[0]
+        self.msaProfile1DF = self.getMsaProfile(self.multipleSequenceAlignment1)[1]
+
+        self.msaProfile2 = self.getMsaProfile(self.multipleSequenceAlignment2)[0]
+        self.msaProfile2DF = self.getMsaProfile(self.multipleSequenceAlignment2)[1]
+
+        self.profProfCostMatrix = self.getCostMatrixProfileProfile()
+
+        self.optProfProfAligDF = self.getProfProfAligTraceback()[0]
+        self.optProfProfAlig1 = self.getProfProfAligTraceback()[1]
+        self.optProfProfAlig2 = self.getProfProfAligTraceback()[2]
+
+        #self.getCommonProfProf = self.getCommonProfProf()[0]
+        self.CommonProfProfDF = self.getCommonProfProf()[1]
+
+
+
+
+
+        #self.costMatrixSeqProfileAlignment = self.getCostMatrixSeqProfileAlignment()
+
+        #self.ProfAligProf = self.getProfAligStrTraceback()[1] #opt?
+        #self.ProfAligProfDF = self.getProfAligStrTraceback()[2]
+        #self.ProfilAligntString = self.getProfAligStrTraceback()[0]
+
         #self.seqProfileAlignmentCost = self.getSeqProfAligStringCost()
-        self.costMatrixSeqProfileAlignment = self.getCostMatrixSeqProfileAlignment()
-        #self.optSeqProfileAlignment  = []
-        self.ProfAligProf = self.getProfAligStrTraceback()[1] #opt?
-        self.ProfAligProfDF = self.getProfAligStrTraceback()[2]
-        self.ProfilAligntString = self.getProfAligStrTraceback()[0]
 
-        self.seqProfileAlignmentCost = self.getSeqProfAligStringCost()
-
-        self.CommonProfile = self.getCommonProfile()[0]
-        self.CommonProfileDF = self.getCommonProfile()[1]
+        #self.CommonProfile = self.getCommonProfile()[0]
+        #self.CommonProfileDF = self.getCommonProfile()[1]
 
 
     
@@ -62,6 +80,7 @@ class alignment:
         self.globalAlignment = []
         self.semiglobalAlignment = []
         self.localAlignment = []
+        self.Cost = 1.25
         self.globalAlignmentAffineCost = []
 
 
@@ -96,21 +115,38 @@ class alignment:
 
         # alignment score function for minimazation optimization1
    
-    def costFunctionProfileCol(self,col, ch1):
+    def costFunctionProfileCol(self, msaProf, col, ch1):
         cost = 0
         ch1 = ch1
         i = 0
         j = col
         for ch2 in self.alphabet:
             if ch1 == ch2:
-                cost += self.matchCost * self.msaProfile[i][j]
+                cost += self.matchCost * msaProf[i][j]
             elif ch1 != ch2:
                 if ch1 == "-" or ch2 == "-":
-                    cost += self.insertCost * self.msaProfile[i][j]
+                    cost += self.insertCost * msaProf[i][j]
                 else:
-                    cost += self.missCost * self.msaProfile[i][j]
+                    cost += self.missCost * msaProf[i][j]
             i+=1
         return cost
+
+    def costFunctionProfileCol2(self, msaProf, msaProf2, col, ch1):
+        cost = 0
+        ch1 = ch1
+        i = 0
+        j = col
+        for ch2 in self.alphabet:
+            if ch1 == ch2:
+                cost += self.matchCost * msaProf[i][j] * msaProf2[i][j]
+            elif ch1 != ch2:
+                if ch1 == "-" or ch2 == "-":
+                    cost += self.insertCost * msaProf[i][j] * msaProf2[i][j]
+                else:
+                    cost += self.missCost * msaProf[i][j] * msaProf2[i][j]
+            i+=1
+        return cost
+
 
 
 
@@ -577,22 +613,50 @@ class alignment:
         return Matrixes
 
 
-    def getAlphabet(self):
+    def getAlphabet1(self):
         l = []
-        for string in self.multipleSequenceAlignment:
+        for string in self.multipleSequenceAlignment1:
             l += list(string)
         charSet = set(l)
         out = list(charSet)
-        out.remove("-")
-        out.append("-")
+        if "-" in out:
+            out.remove("-")
+            out.append("-")
+
+
+        return out
+
+    def getAlphabet2(self):
+        l = []
+        for string in self.multipleSequenceAlignment2:
+            l += list(string)
+        charSet = set(l)
+        out = list(charSet)
+        if "-" in out:
+            out.remove("-")
+            out.append("-")
 
         return out 
 
-    def getMsaProfile(self):
+
+
+    def getAlphabet(self):
+        l = []
+        for string in self.multipleSequenceAlignment1 + self.multipleSequenceAlignment2:
+            l += list(string)
+        charSet = set(l)
+        out = list(charSet)
+        if "-" in out:
+            out.remove("-")
+            out.append("-")
+
+        return out 
+
+    def getMsaProfile(self, stringList):
         charSet = self.alphabet
         
         alphLen = len(charSet)
-        strLen = len(self.multipleSequenceAlignment[0])
+        strLen = len(stringList[0])
 
         profile =  np.empty(shape=(alphLen,strLen), dtype='object')
 
@@ -603,13 +667,13 @@ class alignment:
             for j in range(strLen):
                 char = l[i]
                 x = 0
-                for string in self.multipleSequenceAlignment:
+                for string in stringList:
 
                     if string[j] == char:
                         x += 1
 
                 if x != 0:
-                    profile[i][j] = f(x/len(self.multipleSequenceAlignment)).limit_denominator(100) 
+                    profile[i][j] = f(x/len(stringList)).limit_denominator(10000) 
                 else:
                     profile[i][j] = 0.0  
 
@@ -675,6 +739,7 @@ class alignment:
                 D[i][j]= mini
         
         return D
+
 
 
     
@@ -798,13 +863,208 @@ class alignment:
         df = pd.DataFrame(B, index=list(self.alphabet), columns=list(range(1,len(string)+1)))
         
         return B, df
-        
+
+
+
+
+
+    def getCostMatrixProfileProfile(self):
+            string_out = ""
+            P_out = np.copy(self.msaProfile1)
+
+
+
+            m = len(self.multipleSequenceAlignment2[0])+1  
+            n = len(self.multipleSequenceAlignment1[0])+1  
+    
+            D = np.zeros(shape=(n, m)).astype('float') 
 
         
-   
+
+            # initializes first row
+            for j in range(1, m):
+                X = D[0][j - 1] + self.costFunctionProfileCol(self.msaProfile2, j-1, "-")
+                D[0][j] = X
+
+
+            for i in range(1, n):
+                X = D[i-1][0] + self.costFunctionProfileCol(self.msaProfile1, i-1, "-")
+                D[i][0] = X
+
+
+
+            alph1 = self.alphabet
+            #alph2 = self.getAlphabet2()
+
+            for i in range(1, n):
+                for j in range(1, m):
+
+
+                    #alphabet des jeweiligen MSA?
+                    sumUP = 0
+                    index = 0
+                    cost = 0
+                    sumUP = self.costFunctionProfileCol(self.msaProfile1, i-1, "-")
+
+
+                    up = D[i-1][j] + sumUP
+
+                    #alphabet des jeweiligen MSA?
+                    sumLeft = 0
+                    index = 0
+                    cost = 0
+
+                    sumLeft = self.costFunctionProfileCol(self.msaProfile2, j-1, "-")
+
+
+
+                    left = D[i][j-1] + sumLeft
+
+
+                    #alphabet des jeweiligen MSA?
+                    sumDiag = 0
+                    indexi = 0
+                    indexj = 0
+                    cost = 0
+                
+                    for chara in alph1:
+                        indexi = 0   
+                        for charb in alph1:
+                            cost = 0
+                            
+                            if chara != charb:
+                                cost = self.missCost
+
+                            s = cost * self.msaProfile1[indexj][j-1] * self.msaProfile2[indexi][j-1]
+                            sumDiag += s
+
+                    
+
+                            indexi+=1
+                        indexj+=1
+
+
+
+
+                    diag = D[i-1][j-1] + sumDiag
+
+                    mini = min(up,left,diag)
+                    D[i][j]= mini
+            
+            
+            df = pd.DataFrame(D)
+            return D
+
+        
+    def getProfProfAligTraceback(self):
+        s1_out=""
+        P1_out = np.copy(self.msaProfile1)
+        P2_out = np.copy(self.msaProfile2)
+
+        appender1 = []
+        r = P1_out.shape[0]-1
+        for x in range(0,r):
+            appender1.append(0)
+        appender1.append(1)
+
+        appender2 = []
+        r = P2_out.shape[0]-1
+        for x in range(0,r):
+            appender2.append(0)
+        appender2.append(1)
+
+
+        D = self.profProfCostMatrix
+        
+        shape = D.shape
+        
+        i = shape[0]-1
+        j = shape[1]-1
+
+        while i > 0 and j > 0:
+
+            sumDiag = 0
+            indexi = 0
+            indexj = 0
+            cost = 0
+            for chara in self.alphabet:
+                indexi = 0   
+                for charb in self.alphabet:
+                    cost = 0
+                    if chara != charb:
+                        cost = self.missCost
+
+                    s = cost * self.msaProfile1[indexj][j-1] * self.msaProfile2[indexi][j-1]
+                    sumDiag += s
+
+                    indexi+=1
+                indexj+=1
+
+            if D[i][j] == D[i][j - 1] + self.costFunctionProfileCol(self.msaProfile2, j-1, "-"):
+                s1_out += "l"
+                j -=1
+
+            
+            
+            elif D[i][j] == D[i - 1][j - 1] + sumDiag:
+                s1_out += "D"
+                i -= 1
+                j -=1
+            
+
+            else:
+                s1_out += "d"
+                i -= 1
+        
+        x = 0
+      
+        for a in s1_out:
+            if a == "l":
+                P1_out = np.insert(P1_out, x, appender1, axis=1)
+            elif a == "d":
+                P2_out = np.insert(P2_out, x, appender2, axis=1)
+                x += 1
+            elif a == "D":
+                x += 1
 
 
 
 
 
+        B_out = np.concatenate((P1_out, P2_out), axis=0)
 
+        B_outDF = (pd.DataFrame(B_out,index=self.alphabet + self.alphabet))
+
+        return B_outDF, P1_out, P2_out
+
+    def getCommonProfProf(self):
+        numStr1 = len(self.multipleSequenceAlignment1)
+        numStr2 = len(self.multipleSequenceAlignment2)
+        numAll = numStr1 + numStr2
+
+        B1 = self.optProfProfAlig1
+        B2 = self.optProfProfAlig2
+        B_out = np.copy(B1)
+
+        shape = B1.shape
+
+        n = shape[0]
+        m = shape[1]
+
+
+        for i in range(m):
+            for j in range(n):
+                sum = 0
+                sum += B1[j][i] * numStr1
+                sum += B2[j][i] * numStr2
+                B_out[j][i] = f(sum/numAll).limit_denominator(10000) 
+
+
+
+
+        df = pd.DataFrame(B_out, index=self.alphabet)
+
+
+        return B_out, df
+
+        
