@@ -31,101 +31,10 @@ else:
 blockSize = math.floor(grid_width//n)
 
 
-def drawGridOld(str2,str1):
-
-    sysfont = pygame.font.get_default_font()
-    font_size = 30
-    font = pygame.font.SysFont(sysfont, font_size)
-
-
-    
-    bx = 1
-    by = 1
-    c = 0
-
-    c_x = 0
-    c_y = 0
-    #blockSizex = math.floor(grid_width//len(str1))
-    #blockSizey = math.floor(grid_width//len(str2))
-
-    difx = 1
-    dify = 1
-
-
-    if len(str1) > len(str2):
-        difx = len(str1)-len(str2) + 1
-
-    elif len(str2) > len(str1):
-        dify = len(str2)-len(str1) + 1
-
-    else:
-        difx = 1
-        dify = 1
-
-
-    for x in range(0,grid_height,blockSize):
-        for y in range(0,grid_width,blockSize):
-
-            if x <= grid_width-blockSize*dify and y <= grid_width-blockSize*(difx):
-                rect = pygame.Rect(x+center_d, y+center_d, blockSize, blockSize)
-                pygame.draw.rect(SCREEN, WHITE, rect, 1)
-        
-
-        if c < len(str1):
-            font_x = (center_d-10)+(c+1)*blockSize
-            font_y = (center_d-10)+(c)*blockSize
-            img = font.render(str1[c], True, WHITE)
-
-            #top str
-            SCREEN.blit(img, (font_x,center_d-30))
-
-        if c < len(str2):
-            font_x = (center_d-10)+(c)*blockSize
-            font_y = (center_d-10)+(c+1)*blockSize
-            img2 = font.render(str2[c], True, WHITE)
-
-            #left str
-            SCREEN.blit(img2,(center_d-30, font_y))
-
-        font_x = (center_d-10)+(c)*blockSize
-        font_y = (center_d-10)+(c)*blockSize
-
-        #numbers over font top
-        img3_1 = font.render(str(c_x), True, WHITE)
-        img3_2 = font.render(str(c_y), True, WHITE)
-        #print(c)
-
-        print(c)
-        if c-1 <= len(str2):
-            #left str
-            SCREEN.blit(img3_1,(center_d-60, font_y))
-
-        #top str
-        SCREEN.blit(img3_2, (font_x,center_d-60))
-
-        if c ==  0:
-
-            img4 = font.render("i", True, WHITE)
-            img5 = font.render("j", True, WHITE)
-
-            SCREEN.blit(img4,(center_d-60, font_y-40))
-            #top str
-            SCREEN.blit(img5, (font_x-40,center_d-60))
-
-
-
-
-        c += 1
-        c_y += 1
-
-        if c_x < len(str1):
-            c_x += 1
-
-
-
 
 def drawGrid(str2,str1):
 
+    #What are those values?
     bx = 1
     by = 1
     c = 0
@@ -158,16 +67,27 @@ def drawGrid(str2,str1):
 
 
 def drawStrIndexes(str1,str2):
-
-
-    for c in range(len(str2)):
-        font_y = (center_d-10)+(c)*blockSize
-        if c ==  0:
+    #write the lenght of str1 as indices on the grid
+    for c1 in range(len(str1)+1):
+        font_y = (center_d-10)+(c1)*blockSize
+        if c1 ==  0:
             img4 = font.render("i", True, WHITE)
             SCREEN.blit(img4,(center_d-60, font_y))
         else:
-            img4 = font.render(str(c), True, WHITE)
+            img4 = font.render(str(c1), True, WHITE)
             SCREEN.blit(img4,(center_d-60, font_y))
+
+    #write the lenght of str2 as indices on the grid
+    for c2 in range(len(str2)+1):
+        font_x = (center_d-10)+(c2+1)*blockSize
+
+        if c2 ==  0:
+            img4 = font.render("j", True, WHITE)
+            SCREEN.blit(img4,(font_x-40,center_d-60))
+        else:
+            img4 = font.render(str(c2), True, WHITE)
+            SCREEN.blit(img4,(font_x-40,center_d-60))
+
 
 
         
@@ -187,6 +107,8 @@ SCREEN.fill(BLACK)
 sysfont = pygame.font.get_default_font()
 font_size = 30
 font = pygame.font.SysFont(sysfont, font_size)
+
+#main()
 
 drawGrid(str1,str2)
 pygame.display.update()
